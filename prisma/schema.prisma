@@ -1,0 +1,132 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../node_modules/.prisma/client"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum Country {
+  INDIA
+  AMERICA
+}
+
+enum OrderStatus {
+  PENDING
+  PLACED
+  CANCELLED
+  DELIVERED
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  NET_BANKING
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           Role
+  country        Country?        // null for ADMIN (global access)
+  orders         Order[]
+  cart           Cart?
+  paymentMethods PaymentMethod[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Restaurant {
+  id        String     @id @default(uuid())
+  name      String
+  cuisine   String
+  address   String
+  country   Country
+  rating    Float      @default(4.0)
+  menuItems MenuItem[]
+  orders    Order[]
+  createdAt DateTime   @default(now())
+}
+
+model MenuItem {
+  id           String      @id @default(uuid())
+  name         String
+  description  String
+  price        Float
+  category     String
+  available    Boolean     @default(true)
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String
+  restaurant      Restaurant     @relation(fields: [restaurantId], references: [id])
+  restaurantId    String
+  items           OrderItem[]
+  status          OrderStatus    @default(PENDING)
+  totalAmount     Float          @default(0)
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  paymentMethodId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  quantity   Int
+  unitPrice  Float    // snapshot price at order time
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @unique
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id         String   @id @default(uuid())
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  cartId     String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  quantity   Int
+}
+
+model PaymentMethod {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  type      PaymentType
+  provider  String      // Visa, Mastercard, HDFC, etc.
+  last4     String?
+  isDefault Boolean     @default(false)
+  orders    Order[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
