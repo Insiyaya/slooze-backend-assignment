@@ -1,6 +1,7 @@
 import { registerEnumType } from '@nestjs/graphql';
 import { Field, Float, ID, InputType, ObjectType } from '@nestjs/graphql';
-import { IsInt, IsUUID, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsInt, IsUUID, Min, ValidateNested } from 'class-validator';
 
 // ─── Enum ─────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,9 @@ export class CreateOrderInput {
   restaurantId: string;
 
   @Field(() => [OrderItemInput])
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemInput)
   items: OrderItemInput[];
 }
 

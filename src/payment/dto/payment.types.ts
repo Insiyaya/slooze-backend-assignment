@@ -1,6 +1,6 @@
 import { registerEnumType } from '@nestjs/graphql';
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export enum PaymentType {
   CREDIT_CARD = 'CREDIT_CARD',
@@ -27,12 +27,15 @@ export class AddPaymentMethodInput {
   last4?: string;
 
   @Field({ nullable: true, defaultValue: false })
+  @IsOptional()
+  @IsBoolean()
   isDefault?: boolean;
 }
 
 @InputType()
 export class UpdatePaymentMethodInput {
   @Field(() => ID)
+  @IsUUID()
   id: string;
 
   @Field(() => PaymentType, { nullable: true })
@@ -47,6 +50,7 @@ export class UpdatePaymentMethodInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsBoolean()
   isDefault?: boolean;
 }
 
