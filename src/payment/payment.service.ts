@@ -91,6 +91,20 @@ export class PaymentService {
       );
     }
 
+    // If deleting the default method, promote the next available one
+    if (method.isDefault) {
+      const next = await this.prisma.paymentMethod.findFirst({
+        where: { userId: user.id, id: { not: id } },
+        orderBy: { createdAt: 'asc' },
+      });
+      if (next) {
+        await this.prisma.paymentMethod.update({
+          where: { id: next.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
     return this.prisma.paymentMethod.delete({ where: { id } });
   }
 }
