@@ -17,7 +17,7 @@ export class RestaurantsService {
 
     return this.prisma.restaurant.findMany({
       where,
-      include: { menuItems: true },
+      include: { menuItems: { where: { available: true } } },
       orderBy: { name: 'asc' },
     });
   }
@@ -28,7 +28,7 @@ export class RestaurantsService {
   ) {
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id },
-      include: { menuItems: true },
+      include: { menuItems: { where: { available: true } } },
     });
 
     if (!restaurant) return null;
