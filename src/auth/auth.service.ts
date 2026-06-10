@@ -16,7 +16,7 @@ export class AuthService {
 
   async login(input: LoginInput): Promise<AuthPayload> {
     const user = await this.prisma.user.findUnique({
-      where: { email: input.email },
+      where: { email: input.email.toLowerCase().trim() },
     });
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
