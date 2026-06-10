@@ -117,6 +117,10 @@ export class OrdersService {
   // ─── Order Operations ─────────────────────────────────────────────────────
 
   async createOrder(user: AuthUser, input: CreateOrderInput) {
+    if (!input.items || input.items.length === 0) {
+      throw new BadRequestException('Order must contain at least one item');
+    }
+
     await this.assertRestaurantAccess(input.restaurantId, user);
 
     // Fetch all menu items to snapshot prices
